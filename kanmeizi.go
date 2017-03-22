@@ -25,8 +25,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"github.com/vus520/studygo/utils"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"regexp"
 	"runtime"
@@ -55,7 +53,7 @@ func main() {
 
 			fmt.Printf("Job: %s\n", url)
 
-			body := curl(url)
+			body, _ := utils.FileGetContents(url)
 			format(body)
 
 			//任务计数器完成
@@ -74,7 +72,7 @@ func main() {
 
 			fmt.Printf("Job: %s\n", url)
 
-			body := curl(url)
+			body, _ := utils.FileGetContents(url)
 			format(body)
 
 			//任务计数器完成
@@ -84,20 +82,21 @@ func main() {
 
 	w.Wait()
 
-	fmt.Printf("页面抓取完成，获取图片: %d 张, 用时: %d 秒\n", len(imgList), time.Now().Unix()-timeStart)
+	timeEnd := time.Now().Unix()
+	fmt.Printf("页面抓取完成，获取图片: %d 张, 用时: %d 秒\n", len(imgList), timeEnd-timeStart)
 
 	imgList = utils.Slice_unique(imgList)
 
 	for i := range imgList {
 		url := fmt.Sprintf("%s", imgList[i])
-		img := curl(url)
+		img, _ := utils.FileGetContents(url)
 
 		file := fmt.Sprintf("./tmp/%x.png", md5.Sum([]byte(img)))
 
 		utils.FilePutContents(string(file), img)
 	}
 
-	fmt.Printf("下载图片: %d, 用时: %d s\n", len(imgList), time.Now().Unix()-timeStart)
+	fmt.Printf("下载图片: %d, 用时: %d s\n", len(imgList), time.Now().Unix()-timeEnd)
 }
 
 //格式化页面，读取图片地址，分图片地址，存入全局变量
@@ -121,24 +120,4 @@ func format(body string) {
 	for i := range page {
 		pageList = append(pageList, page[i][1])
 	}
-}
-
-func curl(url string) string {
-
-	resp, err := http.Get(url)
-
-	if err != nil {
-		// handle error
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		fmt.Println("Get faile: " + url)
-		return ""
-	}
-
-	return string(body)
 }

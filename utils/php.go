@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -12,8 +14,18 @@ func IsFile(file string) bool {
 	return true
 }
 
-func FilePutContents(filename string, content string) (val bool, err error) {
+//检查目录是否存在
+func IsDir(path string) bool {
+	p, err := os.Stat(path)
+	if err != nil {
+		return os.IsExist(err)
+	} else {
+		return p.IsDir()
+	}
+}
 
+//写内容到文件
+func FilePutContents(filename string, content string) (val bool, err error) {
 	if IsFile(filename) {
 		return
 	}
@@ -27,4 +39,22 @@ func FilePutContents(filename string, content string) (val bool, err error) {
 	fout.WriteString(content)
 
 	return true, nil
+}
+
+func FileGetContents(url string) (str string, err error) {
+	resp, err := http.Get(url)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }
