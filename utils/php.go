@@ -1,9 +1,14 @@
+/**
+ * A few function in php
+ */
+
 package utils
 
 import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 //检查文件是否存在
@@ -41,20 +46,40 @@ func FilePutContents(filename string, content string) (val bool, err error) {
 	return true, nil
 }
 
-func FileGetContents(url string) (str string, err error) {
-	resp, err := http.Get(url)
+func FileGetContents(uri string) (str string, err error) {
+	url := strings.ToLower(strings.TrimSpace(uri))
 
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		resp, err := http.Get(url)
+
+		if err != nil {
+			return "", err
+		}
+
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+
+		if err != nil {
+			return "", err
+		}
+
+		return string(body), nil
+	}
+
+	data, err := ioutil.ReadFile(uri)
 	if err != nil {
 		return "", err
 	}
 
-	defer resp.Body.Close()
+	return string(data), nil
+}
 
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		return "", err
+func Unlink(uri string) error {
+	if IsFile(uri) {
+		err := os.Remove(uri)
+		return err
 	}
 
-	return string(body), nil
+	return nil
 }
