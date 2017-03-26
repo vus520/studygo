@@ -1,0 +1,3 @@
+[submodule "project/go-ipip"]
+	path = project/go-ipip
+	url = git@github.com:vus520/go-ipip.git
