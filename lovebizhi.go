@@ -51,7 +51,7 @@ func SaveImage(paper *Wallpaper) {
     }
 
     timeEnd := time.Now().Unix()
-    fmt.Printf("%d: %s, 用时: %d (%d-%d) 秒, %s\n", paper.Pid, paper.Url, timeEnd-timeStart, timeStart, timeEnd, err)
+    fmt.Printf("%d: %s, 用时: %d (%d-%d) 秒, err:%s\n", paper.Pid, paper.Url, timeEnd-timeStart, timeStart, timeEnd, err)
 
     w.Done()
 }
