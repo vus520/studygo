@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"reflect"
 )
 
 var (
@@ -19,6 +20,21 @@ var (
 		"User-Agent":      "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0",
 	}
 )
+
+type IpLocation struct {
+	country,
+	country_id,
+	area,
+	area_id,
+	region,
+	region_id,
+	city,
+	city_id,
+	county_id,
+	isp,
+	isp_id,
+	ip string
+}
 
 func main() {
 	bodyByte, err := curl(Url, Header)
@@ -38,20 +54,21 @@ func main() {
 	data := dataJson["data"]
 	fmt.Printf("%#v\n\n", data)
 
-	dataMap := data.(map[string]interface{})
+	dataMap := (data).(map[string]interface{})
 	fmt.Printf("IpLocation: %s: %s%s\n\n", dataMap["ip"], dataMap["country"], dataMap["region"])
 
 	for index, element := range data.(map[string]interface{}) {
 		switch value := element.(type) {
 		case int:
-			fmt.Printf("list[%d] ,value is %d\n", index, value)
-		case string:
-			fmt.Printf("list[%d] ,value is %s\n", index, value)
+			fmt.Printf("list[%d]\t\t\t\t,value is %d\n", index, value)
 		default:
-			fmt.Printf("list[%d] ,value is \n", index)
+			fmt.Printf("list[%s]\t\t\t\t,value is %s\n", index, value)
 		}
 	}
 
+	ip, _ := getValue(data, "ip")
+	country, _ := getValue(data, "country")
+	fmt.Printf("IP: %s, location: %s", ip, country)
 }
 
 func curl(url string, Header map[string]string) ([]byte, error) {
@@ -102,4 +119,24 @@ func jsonDecode(bodyByte []byte) (map[string]interface{}, error) {
 	}
 
 	return body, nil
+}
+
+func getValue(d interface{}, label string) (interface{}, bool) {
+
+    switch reflect.TypeOf(d).Kind() {
+    case reflect.Struct:
+        v := reflect.ValueOf(d).FieldByName(label)
+             return v.Interface(), true
+
+    case reflect.Map:
+		inter := reflect.ValueOf(d).Interface()
+		dict  := inter.(map[string]interface{})
+
+		if val, ok := dict[label]; ok {
+		    return val, ok
+		}
+
+        return nil, false
+    }
+   return nil, false
 }
