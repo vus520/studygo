@@ -53,11 +53,11 @@ func FileGetContents(uri string) (str string, err error) {
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		resp, err := http.Get(url)
 
-		defer resp.Body.Close()
-
 		if err != nil {
 			return "", err
 		}
+
+		defer resp.Body.Close()
 
 		if resp.StatusCode >= 400 {
 			return "", errors.New(resp.Status)
