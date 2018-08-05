@@ -2,6 +2,7 @@ package main
 
 import (
     "archive/zip"
+    "flag"
     "io"
     "log"
     "os"
@@ -9,13 +10,14 @@ import (
 )
 
 func main() {
-    dir, err := os.Open("/wwwroot/test_dir")
+    flag.Parse()
+
+    dir, err := os.Open(flag.Arg(1))
     if err != nil {
         log.Fatal(err)
-        return
     }
     var files = []*os.File{dir}
-    Compress(files, "test.zip")
+    Compress(files, flag.Arg(0))
 }
 
 //压缩文件
@@ -40,6 +42,8 @@ func compress(file *os.File, prefix string, zw *zip.Writer) error {
     if err != nil {
         return err
     }
+
+    prefix = strings.TrimLeft(prefix, " /")
     if info.IsDir() {
         prefix = prefix + "/" + info.Name()
         fileInfos, err := file.Readdir(-1)
